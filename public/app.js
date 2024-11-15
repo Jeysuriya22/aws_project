@@ -1,3 +1,14 @@
+// app.js
+
+// AWS SDK configuration
+const AWS = require('aws-sdk');
+AWS.config.update({
+  region: 'us-east-1', // Replace with your region
+});
+
+const s3 = new AWS.S3();
+
+// Expense tracker variables
 let monthlyBudget = 0;
 let expenses = [];
 let totalExpenses = 0;
@@ -36,6 +47,9 @@ function addExpense() {
     expenseItem.innerHTML = `${expense.date} - ${expense.description} - $${expense.amount.toFixed(2)}`;
     expenseList.appendChild(expenseItem);
 
+    // Save expenses to S3
+    saveExpensesToS3();
+
     // Update the summary
     updateSummary();
 
@@ -53,4 +67,30 @@ function updateSummary() {
     document.getElementById("total-expenses").textContent = totalExpenses.toFixed(2);
     document.getElementById("remaining-budget").textContent = remainingBudget.toFixed(2);
     document.getElementById("monthly-savings").textContent = monthlySavings.toFixed(2);
+}
+
+// Function to upload expenses data to S3
+function uploadToS3(fileName, fileContent) {
+    const params = {
+        Bucket: 'expense-tracker-bucket', // Replace with your bucket name
+        Key: fileName,
+        Body: fileContent,
+        ContentType: 'application/json',
+    };
+
+    s3.upload(params, function(err, data) {
+        if (err) {
+            console.error('Error uploading file: ', err);
+        } else {
+            console.log('File uploaded successfully at: ', data.Location);
+        }
+    });
+}
+
+// Function to save expenses data to S3
+function saveExpensesToS3() {
+    const expensesData = JSON.stringify(expenses);
+    const fileName = `expenses_${new Date().toISOString()}.json`; // Save with timestamp
+
+    uploadToS3(fileName, expensesData);
 }
