@@ -72,7 +72,7 @@ function updateSummary() {
 // Function to upload expenses data to S3
 function uploadToS3(fileName, fileContent) {
     const params = {
-        Bucket: 'expense-tracker-bucket', // Replace with your bucket name
+        Bucket: 'expence-tracker-project', // Replace with your bucket name
         Key: fileName,
         Body: fileContent,
         ContentType: 'application/json',
