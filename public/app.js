@@ -95,3 +95,43 @@ function saveExpensesToBackend() {
     })
     .catch(err => console.error('Error:', err));
 }
+async function signUp() {
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        const { user } = await Amplify.Auth.signUp({
+            username,
+            password,
+            attributes: {
+                email
+            }
+        });
+        alert('Sign-up successful. Please check your email to confirm your account.');
+    } catch (error) {
+        console.log('Error signing up:', error);
+    }
+}
+async function signIn() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        const user = await Amplify.Auth.signIn(username, password);
+        alert('Sign-in successful!');
+        // Store user session for accessing protected resources
+        sessionStorage.setItem('userSession', JSON.stringify(user));
+    } catch (error) {
+        console.log('Error signing in:', error);
+    }
+}
+async function signOut() {
+    try {
+        await Amplify.Auth.signOut();
+        alert('Sign-out successful!');
+        sessionStorage.removeItem('userSession');
+    } catch (error) {
+        console.log('Error signing out:', error);
+    }
+}
