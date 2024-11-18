@@ -4,7 +4,7 @@ AWS.config.update({
   region: 'us-east-1', // Replace with your AWS region
 });
 
-const s3 = new AWS.S3();
+const s3 = new AWS.S3(); // This line is not needed for DynamoDB, but leave it here if you use it for other purposes
 
 // Expense tracker variables
 let monthlyBudget = 0;
@@ -85,5 +85,5 @@ function saveExpensesToBackend() {
         console.error('Error saving expenses to backend');
       }
     })
-    .catch(err => console.error('Error:', err));
+    .catch(err => console.error('Error:', err));
 }
