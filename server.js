@@ -37,7 +37,7 @@ app.post('/api/save-expenses', (req, res) => {
 
   const fileName = `expenses_${new Date().toISOString()}.json`; // File name with timestamp
   const params = {
-    Bucket: 'expense-tracker-project', // Replace with your bucket name
+    Bucket: 'my-expence-tracker', // Replace with your bucket name
     Key: fileName,
     Body: JSON.stringify(expenses),
     ContentType: 'application/json',
