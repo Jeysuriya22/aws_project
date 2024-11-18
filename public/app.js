@@ -1,14 +1,10 @@
-import { Amplify } from 'aws-amplify';
-
-// AWS SDK and Amplify configuration
-Amplify.configure({
-  Auth: {
-    region: 'us-east-1', // Your region
-    userPoolId: 'us-east-1_8nSK5yK3i', // Your User Pool ID
-    userPoolWebClientId: '3rh79ufoi5bjopi76qeobktagf', // Your App Client ID
-    authenticationFlowType: 'USER_PASSWORD_AUTH'
-  }
+// AWS SDK configuration
+const AWS = require('aws-sdk');
+AWS.config.update({
+  region: 'us-east-1', // Replace with your AWS region
 });
+
+const s3 = new AWS.S3();
 
 // Expense tracker variables
 let monthlyBudget = 0;
@@ -43,10 +39,10 @@ function addExpense() {
   expenses.push(expense);
   totalExpenses += amount;
 
-  // Add to expense list in UI
+  // Add to expense list
   const expenseList = document.getElementById("expense-list");
   const expenseItem = document.createElement("li");
-  expenseItem.innerHTML = `${expense.date} - ${expense.description} - $${expense.amount.toFixed(2)}`;
+  expenseItem.innerHTML = ${expense.date} - ${expense.description} - $${expense.amount.toFixed(2)};
   expenseList.appendChild(expenseItem);
 
   // Save expenses to the backend
@@ -78,7 +74,7 @@ function saveExpensesToBackend() {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(expenses),  // Send expenses array to backend
+    body: JSON.stringify(expenses),
   })
     .then(response => {
       if (response.ok) {
@@ -87,5 +83,5 @@ function saveExpensesToBackend() {
         console.error('Error saving expenses to backend');
       }
     })
-    .catch(err => console.error('Error:', err));
+    .catch(err => console.error('Error:', err));
 }
