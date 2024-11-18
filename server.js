@@ -43,7 +43,7 @@ app.post('/api/save-expenses', (req, res) => {
     const params = {
       TableName: tableName,
       Item: {
-        ExpenseId: ${new Date().getTime()}-${Math.floor(Math.random() * 1000)}, // Generate unique ID
+        ExpenseId: `${new Date().getTime()}-${Math.floor(Math.random() * 1000)}`, // Generate unique ID
         Date: expense.date,
         Description: expense.description,
         Amount: expense.amount,
