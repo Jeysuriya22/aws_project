@@ -6,15 +6,14 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// AWS S3 configuration
-
+// AWS DynamoDB configuration
 AWS.config.update({
   region: 'us-east-1',
   accessKeyId: 'AKIAST6S7CZ3H5UYUBL5', // Replace with your AWS access key ID
-  secretAccessKey: 'Rk4BwvcbICasICcGheDVzmL/VL9w53h2KR5LHeP8', // Replace with your AWS secret access key
-// Replace with your AWS region
+  secretAccessKey: 'Rk4BwvcbICasICcGheDVzmL/VL9w53h2KR5LHeP8', // Replace with your AWS secret access key
 });
-const s3 = new AWS.S3();
+
+const dynamoDB = new AWS.DynamoDB.DocumentClient(); // Create DynamoDB client
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -31,7 +30,7 @@ app.get('/api/expenses', (req, res) => {
   res.json(expenses);
 });
 
-// API route to save expenses to S3
+// API route to save expenses to DynamoDB
 app.post('/api/save-expenses', (req, res) => {
   const expenses = req.body;
 
@@ -39,23 +38,32 @@ app.post('/api/save-expenses', (req, res) => {
     return res.status(400).send('Invalid expenses data');
   }
 
-  const fileName = `expenses_${new Date().toISOString()}.json`; // File name with timestamp
-  const params = {
-    Bucket: 'my-expence-tracker', // Replace with your bucket name
-    Key: fileName,
-    Body: JSON.stringify(expenses),
-    ContentType: 'application/json',
-  };
+  // Loop through each expense and save it to DynamoDB
+  const tableName = 'Expenses'; // Replace with your DynamoDB table name
+  const promises = expenses.map(expense => {
+    const params = {
+      TableName: Expenses,
+      Item: {
+        id: `${new Date().toISOString()}-${expense.description}`, // Unique ID for each expense
+        date: expense.date,
+        description: expense.description,
+        amount: expense.amount,
+      },
+    };
 
-  s3.upload(params, (err, data) => {
-    if (err) {
-      console.error('Error uploading to S3:', err);
-      res.status(500).send('Error saving expenses');
-    } else {
-      console.log('Expenses uploaded to S3 successfully:', data.Location);
-      res.status(200).send('Expenses saved to S3 successfully');
-    }
+    return dynamoDB.put(params).promise(); // PutItem request
   });
+
+  // Run all put operations concurrently
+  Promise.all(promises)
+    .then(() => {
+      console.log('Expenses saved to DynamoDB successfully');
+      res.status(200).send('Expenses saved to DynamoDB successfully');
+    })
+    .catch(err => {
+      console.error('Error saving expenses to DynamoDB:', err);
+      res.status(500).send('Error saving expenses');
+    });
 });
 
 // Handle all other routes by serving index.html
