@@ -2,16 +2,18 @@ const express = require('express');
 const path = require('path');
 const AWS = require('aws-sdk');
 const bodyParser = require('body-parser');
+const uuid = require('uuid');  // To generate unique file names
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// AWS DynamoDB configuration
+// AWS S3 and SNS configuration
 AWS.config.update({
   region: 'us-east-1', // Replace with your AWS region
 });
 
-const dynamoDB = new AWS.DynamoDB.DocumentClient();  // Using DocumentClient to interact with DynamoDB
+const s3 = new AWS.S3();  // S3 client
+const sns = new AWS.SNS(); // SNS client
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -28,7 +30,7 @@ app.get('/api/expenses', (req, res) => {
   res.json(expenses);
 });
 
-// API route to save expenses to DynamoDB
+// API route to save expenses to S3 and send SNS notification
 app.post('/api/save-expenses', (req, res) => {
   const expenses = req.body;
 
@@ -36,34 +38,45 @@ app.post('/api/save-expenses', (req, res) => {
     return res.status(400).send('Invalid expenses data');
   }
 
-  const tableName = 'ExpenseTracker'; // Name of your DynamoDB table
+  const bucketName = 'my-expense-tracker'; // Name of your S3 bucket
+  const fileName = `expenses-${uuid.v4()}.json`; // Generate unique file name
 
-  // Iterate over the expenses and store them in DynamoDB
-  const promises = expenses.map((expense) => {
-    const params = {
-      TableName: ExpenseTracker,
-      Item: {
-        ExpenseId: `${new Date().getTime()}-${Math.floor(Math.random() * 1000)}`, // Generate unique ID
-        Date: expense.date,
-        Description: expense.description,
-        Amount: expense.amount,
-      },
+  // Create an object with all expenses
+  const expensesData = JSON.stringify(expenses);
+
+  // S3 upload params
+  const params = {
+    Bucket: bucketName,
+    Key: fileName,
+    Body: expensesData,
+    ContentType: 'application/json', // Specify content type as JSON
+  };
+
+  // Upload to S3
+  s3.upload(params, (err, data) => {
+    if (err) {
+      console.error('Error uploading expenses to S3:', err);
+      return res.status(500).send('Error saving expenses');
+    }
+
+    console.log('Expenses saved to S3 successfully:', data);
+
+    // Send SNS notification after successfully uploading to S3
+    const snsParams = {
+      Message: `New expenses file has been uploaded to S3: ${data.Location}`, // Message body
+      TopicArn: 'arn:aws:sns:us-east-1:123456789012:ExpenseTrackerNotification', // Replace with your SNS Topic ARN
     };
 
-    // Insert each expense into DynamoDB
-    return dynamoDB.put(params).promise();
-  });
-
-  // Execute all the put requests simultaneously
-  Promise.all(promises)
-    .then(() => {
-      console.log('Expenses saved to DynamoDB successfully');
-      res.status(200).send('Expenses saved to DynamoDB successfully');
-    })
-    .catch((err) => {
-      console.error('Error saving expenses to DynamoDB:', err);
-      res.status(500).send('Error saving expenses');
+    sns.publish(snsParams, (snsErr, snsData) => {
+      if (snsErr) {
+        console.error('Error sending SNS notification:', snsErr);
+      } else {
+        console.log('SNS notification sent:', snsData);
+      }
     });
+
+    res.status(200).send('Expenses saved to S3 and SNS notification sent successfully');
+  });
 });
 
 // Handle all other routes by serving index.html
@@ -73,5 +86,5 @@ app.get('*', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(Expense Tracker app listening at http://localhost:${port});
+  console.log(`Expense Tracker app listening at http://localhost:${port}`);
 });
