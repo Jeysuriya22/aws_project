@@ -74,16 +74,14 @@ function saveExpensesToBackend() {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(expenses),
+    body: JSON.stringify(expenses),  // Send expenses array to backend
   })
-    .then(response => response.json())  // Parse the response as JSON
-    .then(data => {
-      console.log('Response data:', data); // Log the response data
+    .then(response => {
       if (response.ok) {
         console.log('Expenses saved to backend successfully');
       } else {
         console.error('Error saving expenses to backend');
       }
     })
-    .catch(err => console.error('Error:', err));
+    .catch(err => console.error('Error:', err));
 }
