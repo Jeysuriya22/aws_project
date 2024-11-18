@@ -7,8 +7,12 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // AWS S3 configuration
+
 AWS.config.update({
-  region: 'us-east-1', // Replace with your AWS region
+  region: 'us-east-1',
+  accessKeyId: 'AKIAST6S7CZ3H5UYUBL5', // Replace with your AWS access key ID
+  secretAccessKey: 'Rk4BwvcbICasICcGheDVzmL/VL9w53h2KR5LHeP8', // Replace with your AWS secret access key
+// Replace with your AWS region
 });
 const s3 = new AWS.S3();
 
