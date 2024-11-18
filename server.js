@@ -8,12 +8,10 @@ const port = process.env.PORT || 3000;
 
 // AWS DynamoDB configuration
 AWS.config.update({
-  region: 'us-east-1',
-  accessKeyId: 'AKIAST6S7CZ3H5UYUBL5', // Replace with your AWS access key ID
-  secretAccessKey: 'Rk4BwvcbICasICcGheDVzmL/VL9w53h2KR5LHeP8', // Replace with your AWS secret access key
+  region: 'us-east-1', // Replace with your AWS region
 });
 
-const dynamoDB = new AWS.DynamoDB.DocumentClient(); // Create DynamoDB client
+const dynamoDB = new AWS.DynamoDB.DocumentClient();  // Using DocumentClient to interact with DynamoDB
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -38,29 +36,31 @@ app.post('/api/save-expenses', (req, res) => {
     return res.status(400).send('Invalid expenses data');
   }
 
-  // Loop through each expense and save it to DynamoDB
-  const tableName = 'Expenses'; // Replace with your DynamoDB table name
-  const promises = expenses.map(expense => {
+  const tableName = 'ExpenseTracker'; // Name of your DynamoDB table
+
+  // Iterate over the expenses and store them in DynamoDB
+  const promises = expenses.map((expense) => {
     const params = {
-      TableName: Expenses,
+      TableName: tableName,
       Item: {
-        ExpenseID: `${new Date().toISOString()}-${expense.description}`, // Unique ID for each expense
-        date: expense.date,
-        description: expense.description,
-        amount: expense.amount,
+        ExpenseId: ${new Date().getTime()}-${Math.floor(Math.random() * 1000)}, // Generate unique ID
+        Date: expense.date,
+        Description: expense.description,
+        Amount: expense.amount,
       },
     };
 
-    return dynamoDB.put(params).promise(); // PutItem request
+    // Insert each expense into DynamoDB
+    return dynamoDB.put(params).promise();
   });
 
-  // Run all put operations concurrently
+  // Execute all the put requests simultaneously
   Promise.all(promises)
     .then(() => {
       console.log('Expenses saved to DynamoDB successfully');
       res.status(200).send('Expenses saved to DynamoDB successfully');
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Error saving expenses to DynamoDB:', err);
       res.status(500).send('Error saving expenses');
     });
@@ -73,5 +73,5 @@ app.get('*', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Expense Tracker app listening at http://localhost:${port}`);
+  console.log(Expense Tracker app listening at http://localhost:${port});
 });
