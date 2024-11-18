@@ -1,3 +1,4 @@
+import { Amplify } from 'aws-amplify';
 // AWS SDK configuration
 const AWS = require('aws-sdk');
 AWS.config.update({
@@ -6,6 +7,15 @@ AWS.config.update({
 
 const s3 = new AWS.S3(); // This line is not needed for DynamoDB, but leave it here if you use it for other purposes
 
+
+Amplify.configure({
+    Auth: {
+        region: 'us-east-1', // Replace with your region
+        userPoolId: 'us-east-1_8nSK5yK3i', // Your User Pool ID
+        userPoolWebClientId: '3rh79ufoi5bjopi76qeobktagf', // Your App Client ID
+        authenticationFlowType: 'USER_PASSWORD_AUTH'
+    }
+})
 // Expense tracker variables
 let monthlyBudget = 0;
 let expenses = [];
