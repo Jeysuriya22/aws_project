@@ -41,7 +41,7 @@ app.post('/api/save-expenses', (req, res) => {
   // Iterate over the expenses and store them in DynamoDB
   const promises = expenses.map((expense) => {
     const params = {
-      TableName: tableName,
+      TableName: ExpenseTracker,
       Item: {
         ExpenseId: `${new Date().getTime()}-${Math.floor(Math.random() * 1000)}`, // Generate unique ID
         Date: expense.date,
