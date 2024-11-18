@@ -44,7 +44,7 @@ app.post('/api/save-expenses', (req, res) => {
     const params = {
       TableName: Expenses,
       Item: {
-        id: `${new Date().toISOString()}-${expense.description}`, // Unique ID for each expense
+        ExpenseID: `${new Date().toISOString()}-${expense.description}`, // Unique ID for each expense
         date: expense.date,
         description: expense.description,
         amount: expense.amount,
